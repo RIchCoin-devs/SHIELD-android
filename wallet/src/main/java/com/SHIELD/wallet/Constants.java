@@ -83,7 +83,7 @@ public class Constants {
     public static final String MARKET_APP_URL = "market://details?id=%s";
     public static final String BINARY_URL = "https://github.com/SHIELDcoin/SHIELD-android/releases";
 
-    public static final String VERSION_URL = "http://moist.ga/version";
+    public static final String VERSION_URL = "http://shieldcurrency.com/android-version";
     public static final String SUPPORT_EMAIL = "ShieldCoin@protonmail.com";
 
     // TODO move to resource files

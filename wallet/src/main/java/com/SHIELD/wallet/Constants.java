@@ -88,7 +88,8 @@ public class Constants {
 
     // TODO move to resource files
     public static final List<CoinAddress> DEFAULT_COINS_SERVERS = ImmutableList.of(
-            new CoinAddress(SHIELDMain.get(),        new ServerAddress("104.131.33.106", 50001),
+            new CoinAddress(SHIELDMain.get(),       new ServerAddress("electrum-1.shieldcurrency.com", 50001),
+                                                    new ServerAddress("104.131.33.106", 50001),
                                                     new ServerAddress("188.226.178.216", 50001))
     );
 

@@ -69,6 +69,7 @@ public class TransactionsListAdapter extends BaseAdapter {
 
     private final int colorSignificant;
     private final int colorLessSignificant;
+    private final int colorIconFont;
     private final int colorInsignificant;
     private final int colorError;
     private final int colorCircularBuilding = Color.parseColor("#44ff44");
@@ -100,6 +101,7 @@ public class TransactionsListAdapter extends BaseAdapter {
         colorLessSignificant = res.getColor(R.color.gray_54_sec_text_icons);
         colorInsignificant = res.getColor(R.color.gray_26_hint_text);
         colorError = res.getColor(R.color.fg_error);
+        colorIconFont = Color.parseColor("#FFFFFF");
         minedTitle = res.getString(R.string.wallet_transactions_coinbase);
         fontIconMined = res.getString(R.string.font_icon_mining);
         sentToTitle = res.getString(R.string.sent_to);
@@ -236,7 +238,7 @@ public class TransactionsListAdapter extends BaseAdapter {
             rowLabel.setTextColor(colorSignificant);
             rowValue.setTextColor(colorSignificant);
             rowDirectionText.setTextColor(colorLessSignificant);
-            rowDirectionFontIcon.setTextColor(colorLessSignificant);
+            rowDirectionFontIcon.setTextColor(colorIconFont);
             if (value.isNegative()) {
                 rowDirectionFontIcon.setBackgroundResource(R.drawable.transaction_row_circle_bg_send);
                 rowValue.setTextColor(res.getColor(R.color.send_color_fg));

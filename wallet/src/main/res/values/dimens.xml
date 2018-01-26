@@ -79,8 +79,8 @@
 
     <!-- generic rows -->
     <dimen name="row_font_icon_margin">8dp</dimen>
-    <dimen name="row_font_icon_size">20sp</dimen>
-    <dimen name="row_font_icon_bg_size">40dp</dimen>
+    <dimen name="row_font_icon_size">14sp</dimen>
+    <dimen name="row_font_icon_bg_size">26dp</dimen>
     <dimen name="row_text_size_header_text">14sp</dimen>
     <dimen name="row_text_size_amount">22sp</dimen>
     <dimen name="row_text_size_label">16sp</dimen>

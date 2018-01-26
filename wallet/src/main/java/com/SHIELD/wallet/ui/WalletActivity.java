@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,8 +16,11 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.view.ActionMode;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.SHIELD.core.coins.CoinType;
@@ -387,7 +391,21 @@ final public class WalletActivity extends BaseWalletActivity implements
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(title);
+
+            View viewActionBar = getLayoutInflater().inflate(R.layout.action_bar_home, null);
+            ActionBar.LayoutParams params = new ActionBar.LayoutParams(//Center the textview in the ActionBar !
+                    ActionBar.LayoutParams.WRAP_CONTENT,
+                    ActionBar.LayoutParams.MATCH_PARENT,
+                    Gravity.CENTER);
+            TextView textviewTitle = (TextView) viewActionBar.findViewById(R.id.actionbar_textview);
+            textviewTitle.setTextColor(Color.parseColor("#e2a43f"));
+            textviewTitle.setText(title);
+            textviewTitle.setTextSize(25);
+            actionBar.setCustomView(viewActionBar, params);
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayHomeAsUpEnabled(false);
+            actionBar.setHomeButtonEnabled(false);
         }
     }
 

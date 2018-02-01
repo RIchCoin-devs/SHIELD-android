@@ -123,6 +123,8 @@ public class NxtServerClient implements BlockchainConnection<NxtTransaction> {
         }
     };
 
+    public void setAnonymous(boolean anonymous){}
+
 
     public NxtServerClient(CoinAddress coinAddress, ConnectivityHelper connectivityHelper) {
         this.connectivityHelper = connectivityHelper;
@@ -617,7 +619,7 @@ public class NxtServerClient implements BlockchainConnection<NxtTransaction> {
     }
 
     @Override
-    public void startAsync() {
+    public void startAsync(boolean anonymous) {
         // TODO implement
     }
 

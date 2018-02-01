@@ -412,7 +412,8 @@ public class SweepWalletFragment extends Fragment {
             log.info("Creating temporary wallet");
             this.publishProgress(TxStatus.LOADING);
             BitWalletSingleKey sweepWallet = new BitWalletSingleKey(type, rawKey.key);
-            serverClients.startAsync(sweepWallet);
+
+            serverClients.startAsync(sweepWallet, WalletApplication.isAnonymous());
 
             int maxWaitMs = Constants.NETWORK_TIMEOUT_MS;
             log.info("Waiting wallet to connect...");

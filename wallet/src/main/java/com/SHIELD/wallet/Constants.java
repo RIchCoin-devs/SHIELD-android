@@ -12,6 +12,8 @@ import com.SHIELD.stratumj.ServerAddress;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +51,7 @@ public class Constants {
     public static final String ARG_EXCHANGE_ENTRY = "exchange_entry";
     public static final String ARG_URI = "test_wallet";
     public static final String ARG_PRIVATE_KEY = "private_key";
+    public static final Proxy TOR_PROXY = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("127.0.0.1", 9050));
 
     public static final int PERMISSIONS_REQUEST_CAMERA = 0;
 
@@ -88,9 +91,11 @@ public class Constants {
 
     // TODO move to resource files
     public static final List<CoinAddress> DEFAULT_COINS_SERVERS = ImmutableList.of(
-            new CoinAddress(SHIELDMain.get(),       new ServerAddress("electrum-1.shieldcurrency.com", 50001),
-                                                    new ServerAddress("104.131.33.106", 50001),
-                                                    new ServerAddress("188.226.178.216", 50001))
+            new CoinAddress(SHIELDMain.get(),
+                    ImmutableList.of(new ServerAddress("electrum-1.shieldcurrency.com", 50001),
+                                     new ServerAddress("104.131.33.106", 50001),
+                                     new ServerAddress("188.226.178.216", 50001)),
+                    ImmutableList.of(new ServerAddress("xl76sqdwdwtnegwx.onion", 50001, TOR_PROXY)))
     );
 
     public static final HashMap<CoinType, Integer> COINS_ICONS;

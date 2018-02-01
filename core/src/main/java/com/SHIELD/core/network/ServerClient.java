@@ -1,6 +1,7 @@
 package com.SHIELD.core.network;
 
 import com.SHIELD.core.coins.CoinType;
+import com.SHIELD.core.coins.Value;
 import com.SHIELD.core.exceptions.AddressMalformedException;
 import com.SHIELD.core.network.interfaces.ConnectionEventListener;
 import com.SHIELD.core.network.interfaces.TransactionEventListener;
@@ -45,6 +46,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
+import sun.rmi.runtime.Log;
+
 import static com.SHIELD.core.Preconditions.checkNotNull;
 import static com.SHIELD.core.Preconditions.checkState;
 import static com.google.common.util.concurrent.Service.State.NEW;
@@ -71,12 +74,15 @@ public class ServerClient implements BitBlockchainConnection {
 
     private CoinType type;
     private final ImmutableList<ServerAddress> addresses;
+    private final ImmutableList<ServerAddress> addressesAnonymous;
     private final HashSet<ServerAddress> failedAddresses;
+    private final HashSet<ServerAddress> failedAddressesAnonymous;
     private ServerAddress lastServerAddress;
     private StratumClient stratumClient;
     private long retrySeconds = 0;
     private long reconnectAt = 0;
     private boolean stopped = false;
+    private boolean anonymous;
 
     private File cacheDir;
     private int cacheSize;
@@ -138,7 +144,11 @@ public class ServerClient implements BitBlockchainConnection {
         public void terminated(Service.State from) {
             log.info("{} client stopped", type.getName());
             broadcastOnDisconnect();
-            failedAddresses.add(lastServerAddress);
+
+            if (lastServerAddress.getProxy() == null) {
+                failedAddresses.add(lastServerAddress);
+            }
+
             lastServerAddress = null;
             stratumClient = null;
             // Try to restart
@@ -156,46 +166,69 @@ public class ServerClient implements BitBlockchainConnection {
         }
     };
 
-    public ServerClient(CoinAddress coinAddress, ConnectivityHelper connectivityHelper) {
+    public ServerClient(CoinAddress coinAddress, ConnectivityHelper connectivityHelper, boolean anonymous) {
         this.connectivityHelper = connectivityHelper;
         eventListeners = new CopyOnWriteArrayList<ListenerRegistration<ConnectionEventListener>>();
         failedAddresses = new HashSet<ServerAddress>();
+        failedAddressesAnonymous = new HashSet<ServerAddress>();
         type = coinAddress.getType();
         addresses = ImmutableList.copyOf(coinAddress.getAddresses());
+        addressesAnonymous = ImmutableList.copyOf(coinAddress.getAddressesAnonymous());
+        this.anonymous = anonymous;
 
         createStratumClient();
     }
 
     private StratumClient createStratumClient() {
         checkState(stratumClient == null);
-        lastServerAddress = getServerAddress();
+
+        if ( anonymous ) {
+            lastServerAddress = getServerAddress(addressesAnonymous, failedAddressesAnonymous);
+        }else{
+            lastServerAddress = getServerAddress(addresses, failedAddresses);
+        }
+
         stratumClient = new StratumClient(lastServerAddress);
         stratumClient.addListener(serviceListener, Threading.USER_THREAD);
         return stratumClient;
     }
 
-    private ServerAddress getServerAddress() {
+    private ServerAddress getServerAddress(ImmutableList<ServerAddress> currentAddresses, HashSet<ServerAddress> currentFailed) {
         // If we blacklisted all servers, reset
-        if (failedAddresses.size() == addresses.size()) {
-            failedAddresses.clear();
+        if (currentFailed.size() == currentAddresses.size()) {
+            currentFailed.clear();
         }
         retrySeconds = Math.min(Math.max(1, retrySeconds * 2), MAX_WAIT);
 
         ServerAddress address;
         // Not the most efficient, but does the job
         while (true) {
-            address = addresses.get(RANDOM.nextInt(addresses.size()));
-            if (!failedAddresses.contains(address)) break;
+            log.error(currentAddresses.toString());
+            address = currentAddresses.get(RANDOM.nextInt(currentAddresses.size()));
+            if (!currentFailed.contains(address)) break;
         }
+
         return address;
     }
 
-    public void startAsync() {
+    public void setAnonymous(boolean anonymous){
+        if (this.anonymous != anonymous){
+            this.clearAsync();
+        }
+
+        this.anonymous = anonymous;
+    }
+
+    public void startAsync(boolean anonymous) {
+
+        setAnonymous(anonymous);
+
         if (stratumClient == null){
             log.info("Forcing service start");
             connectionExec.remove(reconnectTask);
             createStratumClient();
         }
+
 
         Service.State state = stratumClient.state();
         if (state != NEW || stopped) {
@@ -217,6 +250,16 @@ public class ServerClient implements BitBlockchainConnection {
     public void stopAsync() {
         if (stopped) return;
         stopped = true;
+        if (isActivelyConnected()) broadcastOnDisconnect();
+        eventListeners.clear();
+        connectionExec.remove(reconnectTask);
+        if (stratumClient != null) {
+            stratumClient.stopAsync();
+            stratumClient = null;
+        }
+    }
+
+    public void clearAsync(){
         if (isActivelyConnected()) broadcastOnDisconnect();
         eventListeners.clear();
         connectionExec.remove(reconnectTask);

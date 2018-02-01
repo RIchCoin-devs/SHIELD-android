@@ -51,6 +51,8 @@ dependencies {
 //    androidTestCompile 'org.robolectric:robolectric:2.3'
 //    androidTestCompile 'com.squareup:fest-android:1.0.+'
     compile project(':core')
+
+    compile 'com.android.support:design:23.3.0'
     compile 'com.android.support:gridlayout-v7:23.3.0'
     compile 'com.android.support:support-v4:23.3.0'
     compile 'com.android.support:appcompat-v7:23.3.0'
@@ -63,6 +65,9 @@ dependencies {
     compile 'ch.acra:acra:4.8.5'
     compile 'com.android.support:support-v4-preferencefragment:1.0.0@aar'
     compile 'com.jakewharton:butterknife:7.0.1'
+
+    compile 'com.mikepenz:iconics-core:2.0.0@aar'
+    compile 'com.mikepenz:fontawesome-typeface:4.4.0.1@aar'
 }
 
 //apply plugin: 'robolectric'

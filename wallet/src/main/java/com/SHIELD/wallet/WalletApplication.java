@@ -12,6 +12,7 @@ import android.net.NetworkInfo;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.SHIELD.core.coins.CoinType;
@@ -47,6 +48,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import info.guardianproject.netcipher.client.StrongSSLSocketFactory;
+import info.guardianproject.netcipher.proxy.OrbotHelper;
+
 /**
  * @author John L. Jegutanis
  * @author Andreas Schildbach
@@ -57,6 +61,7 @@ import javax.annotation.Nullable;
         reportType = HttpSender.Type.JSON
 )
 public class WalletApplication extends Application {
+    private static WalletApplication application;
     private static final Logger log = LoggerFactory.getLogger(WalletApplication.class);
 
     private static HashMap<String, Typeface> typefaces;
@@ -78,9 +83,15 @@ public class WalletApplication extends Application {
     private ShapeShift shapeShift;
     private File txCachePath;
 
+    private boolean anonymous;
+
     @Override
     public void onCreate() {
 //        ACRA.init(this);
+
+        WalletApplication.application = this;
+
+        setIsAnonymous();
 
         config = new Configuration(PreferenceManager.getDefaultSharedPreferences(this));
 
@@ -181,6 +192,15 @@ public class WalletApplication extends Application {
             } else {
                 config.setDeviceCompatible(true);
             }
+        }
+    }
+
+    private void setIsAnonymous(){
+        if (OrbotHelper.isOrbotInstalled(this)){
+            OrbotHelper.requestStartTor(this);
+            anonymous = true;
+        }else{
+            anonymous = false;
         }
     }
 
@@ -435,4 +455,17 @@ public class WalletApplication extends Application {
             startService(coinServiceConnectIntent);
         }
     }
+
+    public static boolean isAnonymous(){
+        if ( application != null)
+            return application.anonymous;
+
+        return false;
+    }
+
+    public static void setAnonymous(boolean anonymous){
+        if ( application != null )
+            application.anonymous = anonymous;
+    }
+
 }

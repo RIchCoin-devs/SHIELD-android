@@ -38,7 +38,9 @@ public interface BlockchainConnection<T> {
 
     boolean isActivelyConnected();
 
-    void startAsync();
+    void startAsync(boolean anonymous);
+
+    void setAnonymous(boolean anonymous);
 
 
 }

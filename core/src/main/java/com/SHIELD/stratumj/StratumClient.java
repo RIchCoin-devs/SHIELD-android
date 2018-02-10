@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
+
+import sun.rmi.runtime.Log;
 
 
 /**
@@ -130,6 +133,12 @@ public class StratumClient extends AbstractExecutionThreadService {
     protected Socket createSocket() throws IOException {
         ServerAddress address = serverAddress;
         log.debug("Opening a socket to " + address.getHost() + ":" + address.getPort());
+
+        if (serverAddress.getProxy() != null){
+            Socket socket = new Socket(address.getProxy());
+            socket.connect(new InetSocketAddress(address.getHost(), address.getPort()));
+            return socket;
+        }
 
         return new Socket(address.getHost(), address.getPort());
     }

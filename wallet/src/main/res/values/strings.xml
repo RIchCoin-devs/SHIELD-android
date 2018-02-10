@@ -25,7 +25,16 @@
     <string name="error_generic">Error occurred while performing action</string>
     <string name="error_could_not_read_wallet">Could not read wallet</string>
     <string name="error_camera">Could not access the device camera</string>
+
+    <!-- Anonym Warning -->
+    <string name="title_visible">Visible</string>
+    <string name="title_anonym">Anonym</string>
+    <string name="message_visible_to_anonym">Your network will can not be identified! Do you want to be anonymous?</string>
+    <string name="message_anonym_to_visible">Your network will can be identified! Do you want to be visible?</string>
+    <string name="message_request_orbot_install">You must have the "Orbot" installed!!</string>
+
     <!-- Generic items -->
+    <string name="button_install">Install</string>
     <string name="button_ok">OK</string>
     <string name="button_next">Next</string>
     <string name="button_finish">Finish</string>

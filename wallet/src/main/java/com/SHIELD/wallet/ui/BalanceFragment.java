@@ -1,16 +1,22 @@
 package com.SHIELD.wallet.ui;
 
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,6 +62,10 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
+import info.guardianproject.netcipher.proxy.OrbotHelper;
+
+import com.mikepenz.fontawesome_typeface_library.FontAwesome;
+import com.mikepenz.iconics.IconicsDrawable;
 
 /**
  * Use the {@link BalanceFragment#newInstance} factory method to
@@ -88,12 +98,14 @@ public class BalanceFragment extends WalletFragment implements LoaderCallbacks<L
     private final MyHandler handler = new MyHandler(this);
     private final ContentObserver addressBookObserver = new AddressBookObserver(handler);
 
-            @Bind(R.id.transaction_rows) ListView transactionRows;
+    @Bind(R.id.transaction_rows) ListView transactionRows;
     @Bind(R.id.swipeContainer) SwipeRefreshLayout swipeContainer;
     @Bind(R.id.history_empty) View emptyPocketMessage;
     @Bind(R.id.account_balance) Amount accountBalance;
     @Bind(R.id.account_exchanged_balance) Amount accountExchangedBalance;
     @Bind(R.id.connection_label) TextView connectionLabel;
+    @Bind(R.id.btn_anonymous) FloatingActionButton btnAnonymous;
+    //@Bind(R.id.txt_type_connection) TextView txtTypeConnection;
     private TransactionsListAdapter adapter;
     private Listener listener;
     private ContentResolver resolver;
@@ -159,7 +171,103 @@ public class BalanceFragment extends WalletFragment implements LoaderCallbacks<L
         // Update the amount
         updateBalance(pocket.getBalance());
 
+        setIconBtnAnonymous(WalletApplication.isAnonymous());
+
+        btnAnonymous.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showWarningChangeNetwork();
+            }
+        });
+
         return view;
+    }
+
+    private void showWarningChangeNetwork(){
+        boolean anonymous = WalletApplication.isAnonymous();
+
+        if (!anonymous){
+            showWarningCurrentAnonym();
+        }else{
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.title_visible)
+                    .setMessage(R.string.message_anonym_to_visible)
+                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            changeTypeNetwork();
+                        }
+                    }).create().show();
+        }
+    }
+
+    private void showWarningCurrentAnonym(){
+        if (!OrbotHelper.isOrbotInstalled(getContext())){
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.title_anonym)
+                    .setMessage(R.string.message_request_orbot_install)
+                    .setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setPositiveButton(R.string.button_install, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = OrbotHelper.getOrbotInstallIntent(getContext());
+                            startActivity(intent);
+                        }
+                    }).create().show();
+        }else{
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.title_anonym)
+                    .setMessage(R.string.message_visible_to_anonym)
+                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            OrbotHelper.requestStartTor(getContext());
+                            changeTypeNetwork();
+                        }
+                    }).create().show();
+        }
+    }
+
+    private void changeTypeNetwork(){
+        WalletApplication.setAnonymous(!WalletApplication.isAnonymous());
+        setIconBtnAnonymous(WalletApplication.isAnonymous());
+
+        if (listener != null) {
+            listener.onRefresh();
+        }
+    }
+
+    private void setIconBtnAnonymous(boolean value){
+        if (value){
+            btnAnonymous.setImageDrawable(
+                    new IconicsDrawable(getContext(), FontAwesome.Icon.faw_user_secret)
+                        .color(Color.WHITE)
+                        .sizeDp(20));
+            //txtTypeConnection.setText("Anonymous");
+        }else{
+            btnAnonymous.setImageDrawable(
+                    new IconicsDrawable(getContext(), FontAwesome.Icon.faw_user)
+                        .color(Color.WHITE)
+                        .sizeDp(20));
+            //txtTypeConnection.setText("Visible");
+        }
     }
 
     @Override
@@ -186,6 +294,7 @@ public class BalanceFragment extends WalletFragment implements LoaderCallbacks<L
                 }
             }
         });
+
         // Configure the refreshing colors
         swipeContainer.setColorSchemeResources(
                 R.color.progress_bar_color_1,

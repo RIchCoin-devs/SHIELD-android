@@ -49,30 +49,31 @@ public class ServerClients {
         }
     }
 
-    public void resetAccount(WalletAccount account) {
+    public void resetAccount(WalletAccount account, boolean anonymous) {
         BlockchainConnection connection = connections.get(account.getCoinType());
         if (connection == null) return;
         connection.addEventListener(account);
+        connection.setAnonymous(anonymous);
         connection.resetConnection();
     }
 
-    public void startAsync(WalletAccount account) {
+    public void startAsync(WalletAccount account, boolean anonymous) {
         if (account == null) {
             log.warn("Provided wallet account is null, not doing anything");
             return;
         }
         CoinType type = account.getCoinType();
-        BlockchainConnection connection = getConnection(type);
+        BlockchainConnection connection = getConnection(type, anonymous);
         connection.addEventListener(account);
-        connection.startAsync();
+        connection.startAsync(anonymous);
     }
 
-    private BlockchainConnection getConnection(CoinType type) {
+    private BlockchainConnection getConnection(CoinType type, boolean anonymous) {
         if (connections.containsKey(type)) return connections.get(type);
         // Try to create a connection
         if (addresses.containsKey(type)) {
             if (type instanceof BitFamily) {
-                ServerClient client = new ServerClient(addresses.get(type), connectivityHelper);
+                ServerClient client = new ServerClient(addresses.get(type), connectivityHelper, anonymous);
                 client.setCacheDir(cacheDir, cacheSize);
                 connections.put(type, client);
                 return client;
@@ -120,11 +121,11 @@ public class ServerClients {
         this.cacheSize = cacheSize;
     }
 
-    public void startOrResetAccountAsync(WalletAccount account) {
+    public void startOrResetAccountAsync(WalletAccount account, boolean anonymous) {
         if (connections.containsKey(account.getCoinType())) {
-            resetAccount(account);
+            resetAccount(account, anonymous);
         } else {
-            startAsync(account);
+            startAsync(account, anonymous);
         }
     }
 }

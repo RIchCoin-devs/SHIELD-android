@@ -15,15 +15,18 @@ import android.text.format.DateUtils;
 
 import com.SHIELD.core.network.ConnectivityHelper;
 import com.SHIELD.core.network.ServerClients;
+import com.SHIELD.core.protos.Protos;
 import com.SHIELD.core.wallet.AbstractAddress;
 import com.SHIELD.core.wallet.Wallet;
 import com.SHIELD.core.wallet.WalletAccount;
 import com.SHIELD.wallet.Configuration;
 import com.SHIELD.wallet.Constants;
 import com.SHIELD.wallet.WalletApplication;
+import com.SHIELD.wallet.util.ThrottlingWalletChangeListener;
 
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.WalletEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +113,7 @@ public class CoinServiceImpl extends Service implements CoinService {
 //            transactionsReceived.incrementAndGet();
 //        }
 //    };
-
+//
 //    private void notifyCoinsReceived(@Nullable final Address from, @Nonnull final BigInteger amount)
 //    {
 //        if (notificationCount == 1)
@@ -159,7 +162,7 @@ public class CoinServiceImpl extends Service implements CoinService {
 //        notification.setSound(Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.coins_received));
 //        nm.notify(NOTIFICATION_ID_COINS_RECEIVED, notification.getNotification());
 //    }
-//
+
 
     private class MyBroadcastReceiver extends BroadcastReceiver {
         private final ConnectivityManager connectivityManager;
@@ -351,10 +354,10 @@ public class CoinServiceImpl extends Service implements CoinService {
                         if (clients == null) {
                             if (connHelper.isConnected()) {
                                 clients = getServerClients(wallet);
-                                clients.startAsync(account);
+                                clients.startAsync(account, WalletApplication.isAnonymous());
                             }
                         } else {
-                            clients.resetAccount(account);
+                            clients.resetAccount(account, WalletApplication.isAnonymous());
                         }
                     } else {
                         log.warn("Tried to start a service for account id {} but no account found.",
@@ -381,7 +384,7 @@ public class CoinServiceImpl extends Service implements CoinService {
                     account.refresh();
 
                     if (clients != null) {
-                        clients.startOrResetAccountAsync(account);
+                        clients.startOrResetAccountAsync(account, WalletApplication.isAnonymous());
                     }
                 }
             } else {
@@ -398,7 +401,7 @@ public class CoinServiceImpl extends Service implements CoinService {
                             clients = getServerClients(wallet);
                         }
 
-                        if (clients != null) clients.startAsync(account);
+                        if (clients != null) clients.startAsync(account, WalletApplication.isAnonymous());
                     } else {
                         log.warn("Tried to start a service for account id {} but no account found.",
                                 lastAccount);
@@ -418,7 +421,7 @@ public class CoinServiceImpl extends Service implements CoinService {
 
                 if (clients != null) {
                     for (WalletAccount account : wallet.getAllAccounts()) {
-                        clients.startAsync(account);
+                        clients.startAsync(account, WalletApplication.isAnonymous());
                     }
                 }
             } else {

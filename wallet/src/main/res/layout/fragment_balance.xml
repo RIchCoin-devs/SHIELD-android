@@ -1,4 +1,5 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,5 +19,17 @@
 
     </com.SHIELD.wallet.ui.widget.SwipeRefreshLayout>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/btn_anonymous"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:backgroundTint="@color/primary_500"
+        android:background="@color/primary_500"
+        app:backgroundTint="@color/primary_500"
+        android:layout_gravity="bottom|right"
+        app:layout_anchor="@+id/swipeContainer"
+        app:layout_anchorGravity="bottom|right"
+        android:layout_margin="16dp"/>
 
-</FrameLayout>
+
+</android.support.design.widget.CoordinatorLayout>
